@@ -1,0 +1,2047 @@
+```html
+<!DOCTYPE html>
+<html>
+<head>
+    <title>My Santa Tracker</title>
+
+    <script src="https://unpkg.com/globe.gl"></script>
+
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: black;
+            font-family: Arial, sans-serif;
+        }
+
+        #globe {
+            width: 100vw;
+            height: 100vh;
+        }
+
+        /* ================================
+           LOGO
+           ================================ */
+
+        #logo {
+            position: absolute;
+            top: 18px;
+            left: 25px;
+            width: 290px;
+            z-index: 20;
+            color: white;
+        }
+
+        #logoSanta {
+            font-size: 32px;
+            margin-right: 8px;
+        }
+
+        #logoName {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        #logoTitle {
+            font-size: 22px;
+            font-weight: bold;
+            letter-spacing: 3px;
+            text-shadow: 0 0 5px rgba(255,255,255,.3);
+        }
+
+        #logoSubtitle {
+            margin-top: 3px;
+            font-size: 9px;
+            letter-spacing: 2px;
+            color: #aeb7bb;
+        }
+
+        #logoLine {
+            width: 100%;
+            height: 2px;
+            margin-top: 10px;
+            background: #596267;
+        }
+
+        /* ================================
+           PARENT SETTINGS
+           ================================ */
+
+        #parentButton {
+            position: absolute;
+            top: 20px;
+            right: 25px;
+            z-index: 30;
+            padding: 10px 14px;
+            background: rgba(8,12,14,.92);
+            color: white;
+            border: 1px solid #687277;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 1px;
+        }
+
+        #parentButton:hover {
+            background: rgba(25,32,36,.96);
+        }
+
+        /* ================================
+           MUSIC BUTTON
+           ================================ */
+
+        #musicButton {
+            position: absolute;
+            bottom: 25px;
+            right: 25px;
+            z-index: 50;
+            padding: 11px 16px;
+            background: rgba(8,12,14,.92);
+            color: white;
+            border: 1px solid #687277;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 11px;
+            letter-spacing: 1px;
+            box-shadow: 0 0 12px rgba(0,0,0,.5);
+        }
+
+        #musicButton:hover {
+            background: rgba(25,32,36,.96);
+        }
+
+        /* ================================
+           TRACKING PANEL
+           ================================ */
+
+        #trackingPanel {
+            position: absolute;
+            top: 112px;
+            left: 25px;
+            width: 290px;
+            background: rgba(8,12,14,.90);
+            border: 2px solid #687277;
+            border-radius: 4px;
+            color: white;
+            padding: 18px;
+            box-sizing: border-box;
+            z-index: 10;
+            box-shadow:
+                0 0 12px rgba(0,0,0,.8),
+                inset 0 0 20px rgba(255,255,255,.03);
+        }
+
+        #panelHeader {
+            border-bottom: 1px solid #596267;
+            padding-bottom: 12px;
+            margin-bottom: 14px;
+        }
+
+        #panelHeader h2 {
+            margin: 0;
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+
+        #status {
+            margin-top: 8px;
+            font-size: 12px;
+            letter-spacing: 1px;
+        }
+
+        #statusDot {
+            display: inline-block;
+            width: 9px;
+            height: 9px;
+            background: #45d66b;
+            border-radius: 50%;
+            margin-right: 7px;
+            box-shadow: 0 0 8px #45d66b;
+        }
+
+        .infoRow {
+            display: flex;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            padding: 10px 0;
+            font-size: 13px;
+        }
+
+        .infoName {
+            color: #aeb7bb;
+        }
+
+        .infoValue {
+            font-weight: bold;
+            max-width: 140px;
+            text-align: right;
+        }
+
+        #signalBox {
+            margin-top: 15px;
+            padding-top: 12px;
+            border-top: 1px solid #596267;
+        }
+
+        #signalTitle {
+            font-size: 11px;
+            color: #aeb7bb;
+            margin-bottom: 7px;
+            letter-spacing: 1px;
+        }
+
+        #signalBars {
+            display: flex;
+            gap: 3px;
+            height: 16px;
+        }
+
+        .signalBar {
+            flex: 1;
+            background: #45d66b;
+            box-shadow: 0 0 5px rgba(69,214,107,.4);
+        }
+
+        #signalText {
+            margin-top: 6px;
+            font-size: 11px;
+            color: #45d66b;
+        }
+
+        #connections {
+            margin-top: 14px;
+            border-top: 1px solid #596267;
+            padding-top: 10px;
+        }
+
+        .connection {
+            display: grid;
+            grid-template-columns: 25px 1fr auto;
+            align-items: center;
+            font-size: 10px;
+            letter-spacing: .5px;
+            padding: 7px 0;
+        }
+
+        .connectionIcon {
+            font-size: 15px;
+        }
+
+        .connectionStatus {
+            color: #45d66b;
+            font-size: 8px;
+        }
+
+        .connectionStatus.waiting {
+            color: #d5a84c;
+        }
+
+        .connectionLine {
+            height: 12px;
+            width: 1px;
+            margin-left: 12px;
+            background: #596267;
+        }
+
+        #bottomText {
+            margin-top: 15px;
+            font-size: 10px;
+            color: #858e92;
+            line-height: 1.5;
+        }
+
+        /* ================================
+           PARENT WINDOW
+           ================================ */
+
+        #parentModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 100;
+            background: rgba(0,0,0,.68);
+            align-items: center;
+            justify-content: center;
+        }
+
+        #parentModal.open {
+            display: flex;
+        }
+
+        #parentBox {
+            width: 360px;
+            max-width: calc(100vw - 30px);
+            background: #080c0e;
+            border: 2px solid #687277;
+            border-radius: 5px;
+            color: white;
+            padding: 20px;
+            box-shadow: 0 0 30px rgba(0,0,0,.8);
+        }
+
+        .parentField {
+            margin-top: 14px;
+        }
+
+        .parentField label {
+            display: block;
+            font-size: 10px;
+            color: #aeb7bb;
+            letter-spacing: 1px;
+            margin-bottom: 7px;
+        }
+
+        .parentField select,
+        .parentField input {
+            width: 100%;
+            box-sizing: border-box;
+            background: #11181c;
+            color: white;
+            border: 1px solid #596267;
+            padding: 10px;
+            border-radius: 3px;
+        }
+
+        #parentEstimate {
+            margin-top: 15px;
+            padding: 12px;
+            border: 1px solid #596267;
+            color: #45d66b;
+            font-size: 11px;
+            line-height: 1.4;
+        }
+
+        .parentButtons {
+            display: flex;
+            gap: 8px;
+            margin-top: 16px;
+        }
+
+        .parentButtons button {
+            flex: 1;
+            padding: 10px;
+            background: #11181c;
+            color: white;
+            border: 1px solid #596267;
+            border-radius: 3px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+<div id="logo">
+    <span id="logoSanta">🎅</span>
+
+    <span id="logoName">
+        <div id="logoTitle">SANTA TRACKER</div>
+        <div id="logoSubtitle">NORTH POLE TRACKING NETWORK</div>
+    </span>
+
+    <div id="logoLine"></div>
+</div>
+
+<button id="parentButton">
+    ⚙ PARENT SETTINGS
+</button>
+
+<!-- CHRISTMAS JAZZ -->
+
+<audio
+    id="christmasMusic"
+    src="pulsebox-jazz-christmas-432315.mp3"
+    loop
+    preload="auto">
+</audio>
+
+<button id="musicButton">
+    🎷 MUSIC ON
+</button>
+
+<div id="trackingPanel">
+
+    <div id="panelHeader">
+        <h2>TRACKING CONSOLE</h2>
+
+        <div id="status">
+            <span id="statusDot"></span>
+            TRACKING ACTIVE
+        </div>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">CURRENT LOCATION</span>
+        <span class="infoValue" id="location">NORTH POLE</span>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">SPEED</span>
+        <span class="infoValue">1,850 MPH</span>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">ALTITUDE</span>
+        <span class="infoValue">35,000 FT</span>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">REINDEER</span>
+        <span class="infoValue">9</span>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">WORLD LOCATIONS</span>
+        <span class="infoValue" id="cityCount">300+</span>
+    </div>
+
+    <div class="infoRow">
+        <span class="infoName">HOME ETA</span>
+        <span class="infoValue" id="homeEta">NOT SET</span>
+    </div>
+
+    <div id="signalBox">
+
+        <div id="signalTitle">
+            RADIO TRACKING SIGNAL
+        </div>
+
+        <div id="signalBars">
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+            <div class="signalBar"></div>
+        </div>
+
+        <div id="signalText">
+            SIGNAL RECEIVED
+        </div>
+
+        <div id="connections">
+
+            <div class="connection">
+                <span class="connectionIcon">📡</span>
+                <span>CELL TOWERS</span>
+                <span class="connectionStatus">CONNECTED</span>
+            </div>
+
+            <div class="connectionLine"></div>
+
+            <div class="connection">
+                <span class="connectionIcon">🛰️</span>
+                <span>SATELLITES</span>
+                <span class="connectionStatus waiting">STANDBY</span>
+            </div>
+
+            <div class="connectionLine"></div>
+
+            <div class="connection">
+                <span class="connectionIcon">◉</span>
+                <span>TRACKING SYSTEM</span>
+                <span class="connectionStatus">ONLINE</span>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="bottomText">
+        Tracking display for this Santa Tracker project.
+    </div>
+
+</div>
+
+<!-- PARENT SETTINGS -->
+
+<div id="parentModal">
+
+    <div id="parentBox">
+
+        <div style="
+            font-size:18px;
+            font-weight:bold;
+            letter-spacing:2px;
+        ">
+            PARENT SETTINGS
+        </div>
+
+        <div style="
+            margin-top:6px;
+            font-size:10px;
+            color:#aeb7bb;
+            line-height:1.5;
+        ">
+            SET THE ESTIMATED HOME LOCATION
+            AND SANTA ARRIVAL TIME.
+        </div>
+
+        <div class="parentField">
+
+            <label>ESTIMATED LOCATION / STATE</label>
+
+            <select id="stateSelect">
+                <option value="">SELECT STATE</option>
+            </select>
+
+        </div>
+
+        <div class="parentField">
+
+            <label>ESTIMATED SANTA ARRIVAL</label>
+
+            <input
+                type="time"
+                id="arrivalTime"
+            >
+
+        </div>
+
+        <div id="parentEstimate">
+            SELECT A STATE TO GET A PROJECT ESTIMATE.
+        </div>
+
+        <div class="parentButtons">
+
+            <button id="cancelParent">
+                CANCEL
+            </button>
+
+            <button id="saveParent">
+                SAVE SETTINGS
+            </button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="globe"></div>
+
+<script>
+
+/* =====================================================
+   CITY DATABASE
+   ===================================================== */
+
+const cityText = `
+
+North Pole|89.9|0|1
+New York|40.7128|-74.006|1
+Los Angeles|34.0522|-118.2437|1
+Chicago|41.8781|-87.6298|1
+Houston|29.7604|-95.3698|1
+Phoenix|33.4484|-112.074|1
+Philadelphia|39.9526|-75.1652|1
+San Antonio|29.4241|-98.4936|1
+San Diego|32.7157|-117.1611|1
+Dallas|32.7767|-96.797|1
+Austin|30.2672|-97.7431|1
+Jacksonville|30.3322|-81.6557|2
+San Jose|37.3382|-121.8863|2
+Columbus|39.9612|-82.9988|2
+Charlotte|35.2271|-80.8431|2
+Indianapolis|39.7684|-86.1581|2
+Seattle|47.6062|-122.3321|1
+Denver|39.7392|-104.9903|1
+Washington DC|38.9072|-77.0369|1
+Boston|42.3601|-71.0589|1
+Nashville|36.1627|-86.7816|2
+Detroit|42.3314|-83.0458|2
+Memphis|35.1495|-90.049|2
+Portland|45.5152|-122.6784|2
+Oklahoma City|35.4676|-97.5164|2
+Las Vegas|36.1699|-115.1398|1
+Baltimore|39.2904|-76.6122|2
+Louisville|38.2527|-85.7585|2
+Milwaukee|43.0389|-87.9065|2
+Albuquerque|35.0844|-106.6504|2
+Tucson|32.2226|-110.9747|3
+Fresno|36.7378|-119.7871|3
+Sacramento|38.5816|-121.4944|2
+Kansas City|39.0997|-94.5786|2
+Atlanta|33.749|-84.388|1
+Miami|25.7617|-80.1918|1
+Tampa|27.9506|-82.4572|2
+Orlando|28.5383|-81.3792|2
+New Orleans|29.9511|-90.0715|2
+Cleveland|41.4993|-81.6944|2
+Pittsburgh|40.4406|-79.9959|2
+Cincinnati|39.1031|-84.512|2
+St Louis|38.627|-90.1994|2
+Minneapolis|44.9778|-93.265|2
+Omaha|41.2565|-95.9345|3
+Raleigh|35.7796|-78.6382|2
+Richmond|37.5407|-77.436|3
+Buffalo|42.8864|-78.8784|3
+Birmingham|33.5186|-86.8104|3
+Charleston|32.7765|-79.9311|3
+Savannah|32.0809|-81.0912|3
+Knoxville|35.9606|-83.9207|3
+Chattanooga|35.0456|-85.3097|3
+Baton Rouge|30.4515|-91.1871|3
+Mobile|30.6954|-88.0399|3
+Boise|43.615|-116.202|3
+Reno|39.5296|-119.8138|3
+Spokane|47.6588|-117.426|3
+Tacoma|47.2529|-122.4443|3
+Anchorage|61.2181|-149.9003|2
+Honolulu|21.3069|-157.8583|2
+
+Toronto|43.6532|-79.3832|1
+Montreal|45.5017|-73.5673|1
+Vancouver|49.2827|-123.1207|1
+Calgary|51.0447|-114.0719|1
+Ottawa|45.4215|-75.6972|2
+Edmonton|53.5461|-113.4938|2
+Winnipeg|49.8951|-97.1384|2
+Quebec City|46.8139|-71.208|2
+Halifax|44.6488|-63.5752|2
+Victoria|48.4284|-123.3656|3
+Saskatoon|52.1332|-106.67|3
+Regina|50.4452|-104.6189|3
+Kelowna|49.888|-119.496|3
+Hamilton|43.2557|-79.8711|3
+London Ontario|42.9849|-81.2453|3
+St Johns|47.5615|-52.7126|3
+Thunder Bay|48.3809|-89.2477|4
+Yellowknife|62.454|-114.3718|4
+Whitehorse|60.7212|-135.0568|4
+
+Mexico City|19.4326|-99.1332|1
+Guadalajara|20.6597|-103.3496|1
+Monterrey|25.6866|-100.3161|1
+Tijuana|32.5149|-117.0382|2
+Cancun|21.1619|-86.8515|2
+Puebla|19.0414|-98.2063|2
+Merida|20.9674|-89.5926|2
+Oaxaca|17.0732|-96.7266|3
+Acapulco|16.8531|-99.8238|3
+Mazatlan|23.2494|-106.4111|3
+Chihuahua|28.632|-106.0691|3
+Hermosillo|29.0729|-110.9559|3
+Leon|21.1221|-101.68|3
+Veracruz|19.1738|-96.1342|3
+
+Guatemala City|14.6349|-90.5069|1
+Belize City|17.5046|-88.1962|3
+San Salvador|13.6929|-89.2182|1
+Tegucigalpa|14.0723|-87.1921|2
+Managua|12.1149|-86.2362|2
+San Jose Costa Rica|9.9281|-84.0907|1
+Panama City|8.9824|-79.5199|1
+
+Bogota|4.711|-74.0721|1
+Medellin|6.2476|-75.5658|2
+Cali|3.4516|-76.532|2
+Barranquilla|10.9685|-74.7813|2
+Cartagena|10.391|-75.4794|2
+Quito|-0.1807|-78.4678|1
+Guayaquil|-2.1709|-79.9224|2
+Lima|-12.0464|-77.0428|1
+Cusco|-13.5319|-71.9675|3
+La Paz|-16.4897|-68.1193|2
+Santa Cruz Bolivia|-17.7833|-63.1821|2
+Santiago|-33.4489|-70.6693|1
+Buenos Aires|-34.6037|-58.3816|1
+Cordoba Argentina|-31.4201|-64.1888|2
+Rosario|-32.9442|-60.6505|3
+Montevideo|-34.9011|-56.1645|1
+Asuncion|-25.2637|-57.5759|2
+Sao Paulo|-23.5505|-46.6333|1
+Rio de Janeiro|-22.9068|-43.1729|1
+Brasilia|-15.7939|-47.8828|1
+Salvador Brazil|-12.9777|-38.5016|2
+Fortaleza|-3.7319|-38.5267|2
+Recife|-8.0476|-34.877|2
+Manaus|-3.119|-60.0217|3
+Belem|-1.4558|-48.4902|3
+Curitiba|-25.4284|-49.2733|2
+Porto Alegre|-30.0346|-51.2177|2
+
+London|51.5074|-0.1278|1
+Paris|48.8566|2.3522|1
+Berlin|52.52|13.405|1
+Madrid|40.4168|-3.7038|1
+Rome|41.9028|12.4964|1
+Moscow|55.7558|37.6173|1
+Amsterdam|52.3676|4.9041|1
+Vienna|48.2082|16.3738|1
+Prague|50.0755|14.4375|1
+Athens|37.9838|23.7275|1
+Dublin|53.3498|-6.2603|1
+Lisbon|38.7223|-9.1393|1
+Stockholm|59.3293|18.0686|1
+Oslo|59.9139|10.7522|1
+Copenhagen|55.6761|12.5683|1
+Helsinki|60.1699|24.9384|1
+Warsaw|52.2297|21.0122|1
+Budapest|47.4979|19.0401|1
+Brussels|50.8503|4.3517|1
+Istanbul|41.0082|28.9784|1
+Bucharest|44.4268|26.1025|2
+Sofia|42.6977|23.3219|2
+Zagreb|45.815|15.9819|3
+Belgrade|44.7866|20.4489|2
+Sarajevo|43.8563|18.4131|3
+Ljubljana|46.0569|14.5058|3
+Bratislava|48.1486|17.1077|2
+Tallinn|59.437|24.7536|2
+Riga|56.9496|24.1052|2
+Vilnius|54.6872|25.2797|2
+Reykjavik|64.1466|-21.9426|2
+Zurich|47.3769|8.5417|2
+Munich|48.1351|11.582|2
+Hamburg|53.5511|9.9937|2
+Barcelona|41.3874|2.1686|1
+Seville|37.3891|-5.9845|3
+Milan|45.4642|9.19|1
+Venice|45.4408|12.3155|2
+Naples|40.8518|14.2681|2
+Manchester|53.4808|-2.2426|2
+Edinburgh|55.9533|-3.1883|2
+Liverpool|53.4084|-2.9916|3
+Glasgow|55.8642|-4.2518|3
+Lyon|45.764|4.8357|3
+Marseille|43.2965|5.3698|3
+Florence|43.7696|11.2558|3
+Porto|41.1579|-8.6291|3
+Valencia|39.4699|-0.3763|3
+Krakow|50.0647|19.945|3
+Bristol|51.4545|-2.5879|3
+Birmingham UK|52.4862|-1.8904|2
+Cardiff|51.4816|-3.1791|3
+Belfast|54.5973|-5.9301|3
+Gothenburg|57.7089|11.9746|3
+Malmo|55.605|13.0038|3
+Geneva|46.2044|6.1432|3
+Dusseldorf|51.2277|6.7735|3
+Cologne|50.9375|6.9603|3
+Frankfurt|50.1109|8.6821|2
+Stuttgart|48.7758|9.1829|3
+Leipzig|51.3397|12.3731|3
+Dresden|51.0504|13.7371|3
+Palermo|38.1157|13.3615|3
+Turin|45.0703|7.6869|3
+Bologna|44.4949|11.3426|3
+Thessaloniki|40.6401|22.9444|3
+Minsk|53.9006|27.559|2
+Kyiv|50.4501|30.5234|1
+Lviv|49.8397|24.0297|3
+Chisinau|47.0105|28.8638|3
+Tbilisi|41.7151|44.8271|2
+Yerevan|40.1872|44.5152|3
+Baku|40.4093|49.8671|2
+
+Cairo|30.0444|31.2357|1
+Alexandria Egypt|31.2001|29.9187|2
+Lagos|6.5244|3.3792|1
+Johannesburg|-26.2041|28.0473|1
+Cape Town|-33.9249|18.4241|1
+Nairobi|-1.2921|36.8219|1
+Casablanca|33.5731|-7.5898|1
+Addis Ababa|9.03|38.74|1
+Accra|5.6037|-0.187|1
+Kinshasa|-4.4419|15.2663|1
+Algiers|36.7538|3.0588|1
+Dakar|14.7167|-17.4677|2
+Abuja|9.0765|7.3986|2
+Kampala|0.3476|32.5825|2
+Dar es Salaam|-6.7924|39.2083|2
+Maputo|-25.9692|32.5732|2
+Harare|-17.8252|31.0335|2
+Lusaka|-15.3875|28.3228|2
+Luanda|-8.839|13.2894|2
+Tunis|36.8065|10.1815|2
+Kigali|-1.9441|30.0619|2
+Marrakesh|31.6295|-7.9811|3
+Mombasa|-4.0435|39.6682|3
+Durban|-29.8587|31.0218|2
+Pretoria|-25.7479|28.2293|3
+Antananarivo|-18.8792|47.5079|3
+Windhoek|-22.5609|17.0658|3
+Gaborone|-24.6282|25.9231|3
+Abidjan|5.36|-4.0083|2
+Freetown|8.4657|-13.2317|3
+Monrovia|6.3156|-10.8074|3
+Bamako|12.6392|-8.0029|3
+Niamey|13.5116|2.1254|3
+N'Djamena|12.1348|15.0557|3
+Khartoum|15.5007|32.5599|2
+Kano|12.0022|8.592|3
+Mogadishu|2.0469|45.3182|2
+Asmara|15.3229|38.9251|3
+
+Dubai|25.2048|55.2708|1
+Abu Dhabi|24.4539|54.3773|2
+Riyadh|24.7136|46.6753|1
+Doha|25.2854|51.531|1
+Muscat|23.588|58.3829|2
+Amman|31.9454|35.9284|2
+Beirut|33.8938|35.5018|2
+Jerusalem|31.7683|35.2137|1
+Baghdad|33.3152|44.3661|1
+Tehran|35.6892|51.389|1
+Damascus|33.5138|36.2765|2
+Jeddah|21.4858|39.1925|2
+Kuwait City|29.3759|47.9774|2
+Manama|26.2235|50.5876|3
+Kabul|34.5553|69.2075|2
+Ankara|39.9334|32.8597|1
+Izmir|38.4237|27.1428|2
+Erbil|36.1911|44.0092|3
+
+Tokyo|35.6762|139.6503|1
+Osaka|34.6937|135.5023|2
+Kyoto|35.0116|135.7681|3
+Nagoya|35.1815|136.9066|2
+Sapporo|43.0618|141.3545|2
+Beijing|39.9042|116.4074|1
+Shanghai|31.2304|121.4737|1
+Guangzhou|23.1291|113.2644|1
+Shenzhen|22.5431|114.0579|1
+Hong Kong|22.3193|114.1694|1
+Chengdu|30.5728|104.0668|2
+Chongqing|29.563|106.5516|2
+Seoul|37.5665|126.978|1
+Busan|35.1796|129.0756|2
+Taipei|25.033|121.5654|1
+Manila|14.5995|120.9842|1
+Cebu City|10.3157|123.8854|2
+Singapore|1.3521|103.8198|1
+Bangkok|13.7563|100.5018|1
+Chiang Mai|18.7883|98.9853|3
+Jakarta|-6.2088|106.8456|1
+Surabaya|-7.2575|112.7521|2
+Kuala Lumpur|3.139|101.6869|1
+Hanoi|21.0278|105.8342|1
+Ho Chi Minh City|10.8231|106.6297|1
+Phnom Penh|11.5564|104.9282|2
+Vientiane|17.9757|102.6331|3
+Yangon|16.8409|96.1735|2
+Dhaka|23.8103|90.4125|1
+Chittagong|22.3569|91.7832|2
+Delhi|28.6139|77.209|1
+Mumbai|19.076|72.8777|1
+Bengaluru|12.9716|77.5946|1
+Hyderabad India|17.385|78.4867|2
+Chennai|13.0827|80.2707|2
+Kolkata|22.5726|88.3639|2
+Ahmedabad|23.0225|72.5714|2
+Pune|18.5204|73.8567|2
+Karachi|24.8607|67.0011|1
+Lahore|31.5204|74.3587|2
+Islamabad|33.6844|73.0479|2
+Kathmandu|27.7172|85.324|2
+Colombo|6.9271|79.8612|2
+Ulaanbaatar|47.8864|106.9057|3
+Almaty|43.2389|76.8897|3
+Astana|51.1694|71.4491|3
+Tashkent|41.2995|69.2401|2
+Bishkek|42.8746|74.5698|3
+Dushanbe|38.5598|68.787|3
+Novosibirsk|55.0084|82.9357|3
+Vladivostok|43.1155|131.8855|3
+Irkutsk|52.2869|104.305|4
+
+Sydney|-33.8688|151.2093|1
+Melbourne|-37.8136|144.9631|1
+Brisbane|-27.4698|153.0251|1
+Perth|-31.9505|115.8605|1
+Adelaide|-34.9285|138.6007|2
+Canberra|-35.2809|149.13|2
+Hobart|-42.8821|147.3272|3
+Darwin|-12.4634|130.8456|3
+Cairns|-16.9186|145.7781|3
+Auckland|-36.8509|174.7645|1
+Wellington|-41.2866|174.7756|2
+Christchurch|-43.5321|172.6362|2
+Dunedin|-45.8788|170.5028|3
+Suva|-18.1416|178.4419|3
+Port Moresby|-9.4438|147.1803|3
+
+Reykjavik|64.1466|-21.9426|2
+Nuuk|64.1814|-51.6941|2
+Longyearbyen|78.2232|15.6469|3
+Tromso|69.6492|18.9553|3
+Fairbanks|64.8378|-147.7164|3
+Murmansk|68.9585|33.0827|3
+`;
+
+/* =====================================================
+   CONVERT CITY DATA
+   ===================================================== */
+
+const locations = cityText
+    .trim()
+    .split("\n")
+    .filter(line => line.trim())
+    .map(line => {
+
+        const [name, lat, lng, level] =
+            line.split("|");
+
+        return {
+            name,
+            lat: Number(lat),
+            lng: Number(lng),
+            level: Number(level),
+            type: "city"
+        };
+
+    });
+
+document.getElementById("cityCount").textContent =
+    locations.length + "+";
+
+/* =====================================================
+   OCEAN + SEA LABELS
+   ===================================================== */
+
+const oceans = [
+
+    { name:"PACIFIC OCEAN", lat:5, lng:-155, size:.75 },
+    { name:"PACIFIC OCEAN", lat:-5, lng:155, size:.75 },
+    { name:"ATLANTIC OCEAN", lat:10, lng:-35, size:.72 },
+    { name:"ATLANTIC OCEAN", lat:-25, lng:-15, size:.68 },
+    { name:"INDIAN OCEAN", lat:-20, lng:80, size:.72 },
+    { name:"ARCTIC OCEAN", lat:82, lng:0, size:.62 },
+    { name:"SOUTHERN OCEAN", lat:-60, lng:20, size:.65 },
+    { name:"NORTH ATLANTIC OCEAN", lat:35, lng:-35, size:.48 },
+    { name:"SOUTH PACIFIC OCEAN", lat:-35, lng:-120, size:.48 },
+    { name:"CARIBBEAN SEA", lat:15, lng:-75, size:.42 },
+    { name:"GULF OF MEXICO", lat:24, lng:-90, size:.40 },
+    { name:"MEDITERRANEAN SEA", lat:35, lng:18, size:.38 },
+    { name:"ARABIAN SEA", lat:15, lng:65, size:.42 },
+    { name:"BAY OF BENGAL", lat:15, lng:88, size:.40 },
+    { name:"SOUTH CHINA SEA", lat:14, lng:114, size:.40 },
+    { name:"EAST CHINA SEA", lat:27, lng:126, size:.36 },
+    { name:"SEA OF JAPAN", lat:40, lng:135, size:.34 },
+    { name:"BERING SEA", lat:57, lng:-175, size:.36 },
+    { name:"GULF OF ALASKA", lat:55, lng:-145, size:.34 },
+    { name:"BLACK SEA", lat:43, lng:35, size:.34 },
+    { name:"RED SEA", lat:20, lng:38, size:.32 },
+    { name:"NORTH SEA", lat:56, lng:3, size:.32 }
+
+];
+
+/* =====================================================
+   LABEL DATA
+   ===================================================== */
+
+function makeLabels(level) {
+
+    return [
+
+        ...oceans.map(ocean => ({
+            ...ocean,
+            type:"ocean"
+        })),
+
+        ...locations.filter(
+            city => city.level <= level
+        )
+
+    ];
+
+}
+
+/* =====================================================
+   SANTA FLIGHT ROUTE
+   ===================================================== */
+
+const santaRoute = [
+
+    { name:"NORTH POLE", lat:89.9, lng:0 },
+
+    { name:"ANCHORAGE", lat:61.2181, lng:-149.9003 },
+
+    { name:"VANCOUVER", lat:49.2827, lng:-123.1207 },
+
+    { name:"SEATTLE", lat:47.6062, lng:-122.3321 },
+
+    { name:"LOS ANGELES", lat:34.0522, lng:-118.2437 },
+
+    { name:"MEXICO CITY", lat:19.4326, lng:-99.1332 },
+
+    { name:"CANCUN", lat:21.1619, lng:-86.8515 },
+
+    { name:"CARIBBEAN", lat:15, lng:-75 },
+
+    { name:"PANAMA CITY", lat:8.9824, lng:-79.5199 },
+
+    { name:"BOGOTA", lat:4.711, lng:-74.0721 },
+
+    { name:"LIMA", lat:-12.0464, lng:-77.0428 },
+
+    { name:"SANTIAGO", lat:-33.4489, lng:-70.6693 },
+
+    { name:"BUENOS AIRES", lat:-34.6037, lng:-58.3816 },
+
+    { name:"RIO DE JANEIRO", lat:-22.9068, lng:-43.1729 },
+
+    { name:"CAPE TOWN", lat:-33.9249, lng:18.4241 },
+
+    { name:"JOHANNESBURG", lat:-26.2041, lng:28.0473 },
+
+    { name:"NAIROBI", lat:-1.2921, lng:36.8219 },
+
+    { name:"CAIRO", lat:30.0444, lng:31.2357 },
+
+    { name:"ROME", lat:41.9028, lng:12.4964 },
+
+    { name:"PARIS", lat:48.8566, lng:2.3522 },
+
+    { name:"LONDON", lat:51.5074, lng:-.1278 },
+
+    { name:"ISTANBUL", lat:41.0082, lng:28.9784 },
+
+    { name:"DUBAI", lat:25.2048, lng:55.2708 },
+
+    { name:"MUMBAI", lat:19.076, lng:72.8777 },
+
+    { name:"DELHI", lat:28.6139, lng:77.209 },
+
+    { name:"BANGKOK", lat:13.7563, lng:100.5018 },
+
+    { name:"SINGAPORE", lat:1.3521, lng:103.8198 },
+
+    { name:"JAKARTA", lat:-6.2088, lng:106.8456 },
+
+    { name:"SYDNEY", lat:-33.8688, lng:151.2093 },
+
+    { name:"AUCKLAND", lat:-36.8509, lng:174.7645 },
+
+    { name:"TOKYO", lat:35.6762, lng:139.6503 },
+
+    { name:"SEOUL", lat:37.5665, lng:126.978 },
+
+    { name:"BEIJING", lat:39.9042, lng:116.4074 },
+
+    { name:"VLADIVOSTOK", lat:43.1155, lng:131.8855 },
+
+    { name:"FAIRBANKS", lat:64.8378, lng:-147.7164 },
+
+    { name:"NORTH POLE", lat:89.9, lng:0 }
+
+];
+
+/* =====================================================
+   SANTA OBJECT
+   ===================================================== */
+
+const santaObject = {
+
+    name:"SANTA",
+
+    lat:santaRoute[0].lat,
+
+    lng:santaRoute[0].lng,
+
+    type:"santa"
+
+};
+
+/* =====================================================
+   GLOBE
+   ===================================================== */
+
+const globe = Globe()
+    (document.getElementById("globe"))
+
+    .globeImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-blue-marble.jpg"
+    )
+
+    .bumpImageUrl(
+        "https://unpkg.com/three-globe/example/img/earth-topology.png"
+    )
+
+    .backgroundImageUrl(
+        "https://unpkg.com/three-globe/example/img/night-sky.png"
+    )
+
+    .showAtmosphere(true)
+
+    .atmosphereColor("#4da6ff")
+
+    .atmosphereAltitude(.18)
+
+    .labelsData(makeLabels(1))
+
+    .labelLat(item => item.lat)
+
+    .labelLng(item => item.lng)
+
+    .labelText(item => item.name)
+
+    .labelSize(item =>
+        item.type === "ocean"
+            ? item.size
+            : .42
+    )
+
+    .labelColor(item =>
+        item.type === "ocean"
+            ? "rgba(210,225,235,.72)"
+            : "#ffffff"
+    )
+
+    .labelDotRadius(item =>
+        item.type === "ocean"
+            ? 0
+            : .11
+    )
+
+    .labelAltitude(item =>
+        item.type === "ocean"
+            ? .003
+            : .015
+    );
+
+/* =====================================================
+   CELL TOWERS
+   ===================================================== */
+
+const cellTowers =
+    locations
+        .filter(city => city.level <= 2)
+        .map(city => ({
+            lat:city.lat,
+            lng:city.lng,
+            type:"tower"
+        }));
+
+const trackingObjects = [
+
+    ...cellTowers,
+
+    {
+        lat:90,
+        lng:0,
+        type:"northPole"
+    },
+
+    santaObject
+
+];
+
+/* =====================================================
+   TRACKING OBJECTS + SANTA
+   ===================================================== */
+
+globe
+
+    .customLayerData(
+        trackingObjects
+    )
+
+    .customThreeObject(
+        data => {
+
+            /* ================================
+               SANTA
+               ================================ */
+
+            if (data.type === "santa") {
+
+                const group =
+                    new THREE.Group();
+
+                /* main Santa marker */
+
+                const body =
+                    new THREE.Mesh(
+
+                        new THREE.SphereGeometry(
+                            .075,
+                            20,
+                            20
+                        ),
+
+                        new THREE.MeshBasicMaterial({
+                            color:0xd71920
+                        })
+
+                    );
+
+                group.add(body);
+
+                /* glowing tracking ring */
+
+                const ring =
+                    new THREE.Mesh(
+
+                        new THREE.TorusGeometry(
+                            .12,
+                            .012,
+                            8,
+                            24
+                        ),
+
+                        new THREE.MeshBasicMaterial({
+                            color:0xffffff
+                        })
+
+                    );
+
+                group.add(ring);
+
+                /* Santa tracking light */
+
+                const light =
+                    new THREE.Mesh(
+
+                        new THREE.SphereGeometry(
+                            .025,
+                            10,
+                            10
+                        ),
+
+                        new THREE.MeshBasicMaterial({
+                            color:0xffffff
+                        })
+
+                    );
+
+                light.position.y = .075;
+
+                group.add(light);
+
+                return group;
+            }
+
+            /* ================================
+               NORTH POLE
+               ================================ */
+
+            if (data.type === "northPole") {
+
+                const group =
+                    new THREE.Group();
+
+                const pole =
+                    new THREE.Mesh(
+
+                        new THREE.CylinderGeometry(
+                            .035,
+                            .045,
+                            .65,
+                            12
+                        ),
+
+                        new THREE.MeshBasicMaterial({
+                            color:0xffffff
+                        })
+
+                    );
+
+                pole.position.y = .35;
+
+                group.add(pole);
+
+                const stripeGeometry =
+                    new THREE.CylinderGeometry(
+                        .039,
+                        .049,
+                        .10,
+                        12
+                    );
+
+                const stripeMaterial =
+                    new THREE.MeshBasicMaterial({
+                        color:0xd71920
+                    });
+
+                [.15,.35,.55].forEach(y => {
+
+                    const stripe =
+                        new THREE.Mesh(
+                            stripeGeometry,
+                            stripeMaterial
+                        );
+
+                    stripe.position.y = y;
+
+                    group.add(stripe);
+
+                });
+
+                const flag =
+                    new THREE.Mesh(
+
+                        new THREE.PlaneGeometry(
+                            .22,
+                            .12
+                        ),
+
+                        new THREE.MeshBasicMaterial({
+                            color:0xd71920,
+                            side:THREE.DoubleSide
+                        })
+
+                    );
+
+                flag.position.set(
+                    .11,
+                    .82,
+                    0
+                );
+
+                group.add(flag);
+
+                return group;
+            }
+
+            /* ================================
+               CELL TOWER
+               ================================ */
+
+            const group =
+                new THREE.Group();
+
+            const pole =
+                new THREE.Mesh(
+
+                    new THREE.CylinderGeometry(
+                        .012,
+                        .018,
+                        .20,
+                        6
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0xaaaaaa
+                    })
+
+                );
+
+            pole.position.y = .10;
+
+            group.add(pole);
+
+            const light =
+                new THREE.Mesh(
+
+                    new THREE.SphereGeometry(
+                        .025,
+                        6,
+                        6
+                    ),
+
+                    new THREE.MeshBasicMaterial({
+                        color:0xffaa33
+                    })
+
+                );
+
+            light.position.y = .21;
+
+            group.add(light);
+
+            return group;
+
+        })
+
+    .customThreeObjectUpdate(
+        (object,data) => {
+
+            const altitude =
+                data.type === "santa"
+                    ? .08
+                    : data.type === "northPole"
+                        ? .03
+                        : .02;
+
+            const position =
+                globe.getCoords(
+                    data.lat,
+                    data.lng,
+                    altitude
+                );
+
+            object.position.copy(position);
+
+            if (
+                data.type !== "northPole"
+            ) {
+
+                object.lookAt(
+                    0,
+                    0,
+                    0
+                );
+
+            }
+
+        }
+    );
+
+/* =====================================================
+   CAMERA
+   ===================================================== */
+
+globe.pointOfView({
+
+    lat:20,
+
+    lng:-30,
+
+    altitude:2.2
+
+});
+
+globe.controls().enableRotate = true;
+
+globe.controls().enableZoom = true;
+
+globe.controls().enablePan = false;
+
+/* =====================================================
+   ZOOM LABEL SYSTEM
+   ===================================================== */
+
+let lastLevel = 1;
+
+globe.controls().addEventListener(
+    "change",
+    () => {
+
+        const altitude =
+            globe.pointOfView().altitude;
+
+        let level;
+
+        if (altitude > 1.8) {
+
+            level = 1;
+
+        } else if (altitude > 1.25) {
+
+            level = 2;
+
+        } else if (altitude > .8) {
+
+            level = 3;
+
+        } else {
+
+            level = 4;
+
+        }
+
+        if (level !== lastLevel) {
+
+            lastLevel = level;
+
+            globe.labelsData(
+                makeLabels(level)
+            );
+
+        }
+
+    }
+);
+
+/* =====================================================
+   SANTA FLIGHT ENGINE
+   ===================================================== */
+
+let routeIndex = 0;
+
+let routeProgress = 0;
+
+/*
+   This controls the speed.
+
+   Increase it for a faster flight.
+   Decrease it for a slower flight.
+*/
+
+const flightSpeed = .00055;
+
+
+/* Keep longitude movement inside
+   the normal -180 to 180 range. */
+
+function interpolateLongitude(
+    start,
+    end,
+    amount
+) {
+
+    let difference =
+        end - start;
+
+    if (difference > 180) {
+
+        difference -= 360;
+
+    }
+
+    if (difference < -180) {
+
+        difference += 360;
+
+    }
+
+    let result =
+        start +
+        difference * amount;
+
+    if (result > 180) {
+
+        result -= 360;
+
+    }
+
+    if (result < -180) {
+
+        result += 360;
+
+    }
+
+    return result;
+
+}
+
+
+function interpolate(
+    start,
+    end,
+    amount
+) {
+
+    return start +
+        (end - start) *
+        amount;
+
+}
+
+
+/* Update the tracking panel */
+
+function updateSantaLocation(
+    current,
+    next
+) {
+
+    const locationElement =
+        document.getElementById(
+            "location"
+        );
+
+    locationElement.textContent =
+        current.name;
+
+}
+
+
+/* Main Santa flight */
+
+function updateSantaFlight() {
+
+    const current =
+        santaRoute[
+            routeIndex
+        ];
+
+    const next =
+        santaRoute[
+            routeIndex + 1
+        ];
+
+
+    if (!next) {
+
+        routeIndex = 0;
+
+        routeProgress = 0;
+
+        return;
+
+    }
+
+
+    routeProgress += flightSpeed;
+
+
+    if (routeProgress >= 1) {
+
+        routeProgress = 0;
+
+        routeIndex++;
+
+        if (
+            routeIndex >=
+            santaRoute.length - 1
+        ) {
+
+            routeIndex = 0;
+
+        }
+
+    }
+
+
+    santaObject.lat =
+        interpolate(
+            current.lat,
+            next.lat,
+            routeProgress
+        );
+
+
+    santaObject.lng =
+        interpolateLongitude(
+            current.lng,
+            next.lng,
+            routeProgress
+        );
+
+
+    updateSantaLocation(
+        current,
+        next
+    );
+
+
+    /*
+       Re-send the objects to Globe.gl
+       so the Santa marker moves.
+    */
+
+    globe.customLayerData([
+        ...trackingObjects
+    ]);
+
+}
+
+
+/* Start Santa's flight */
+
+setInterval(
+    updateSantaFlight,
+    50
+);
+
+/* =====================================================
+   PARENT SETTINGS
+   ===================================================== */
+
+const states = [
+
+    "Alabama","Alaska","Arizona","Arkansas",
+    "California","Colorado","Connecticut",
+    "Delaware","Florida","Georgia","Hawaii",
+    "Idaho","Illinois","Indiana","Iowa",
+    "Kansas","Kentucky","Louisiana","Maine",
+    "Maryland","Massachusetts","Michigan",
+    "Minnesota","Mississippi","Missouri",
+    "Montana","Nebraska","Nevada",
+    "New Hampshire","New Jersey","New Mexico",
+    "New York","North Carolina","North Dakota",
+    "Ohio","Oklahoma","Oregon","Pennsylvania",
+    "Rhode Island","South Carolina",
+    "South Dakota","Tennessee","Texas","Utah",
+    "Vermont","Virginia","Washington",
+    "West Virginia","Wisconsin","Wyoming",
+    "District of Columbia"
+
+];
+
+const stateTimeZones = {
+
+    Alabama:"CT",
+    Alaska:"AK",
+    Arizona:"MT",
+    Arkansas:"CT",
+    California:"PT",
+    Colorado:"MT",
+    Connecticut:"ET",
+    Delaware:"ET",
+    Florida:"ET",
+    Georgia:"ET",
+    Hawaii:"HT",
+    Idaho:"MT",
+    Illinois:"CT",
+    Indiana:"ET",
+    Iowa:"CT",
+    Kansas:"CT",
+    Kentucky:"ET",
+    Louisiana:"CT",
+    Maine:"ET",
+    Maryland:"ET",
+    Massachusetts:"ET",
+    Michigan:"ET",
+    Minnesota:"CT",
+    Mississippi:"CT",
+    Missouri:"CT",
+    Montana:"MT",
+    Nebraska:"CT",
+    Nevada:"PT",
+    "New Hampshire":"ET",
+    "New Jersey":"ET",
+    "New Mexico":"MT",
+    "New York":"ET",
+    "North Carolina":"ET",
+    "North Dakota":"CT",
+    Ohio:"ET",
+    Oklahoma:"CT",
+    Oregon:"PT",
+    Pennsylvania:"ET",
+    "Rhode Island":"ET",
+    "South Carolina":"ET",
+    "South Dakota":"CT",
+    Tennessee:"CT",
+    Texas:"CT",
+    Utah:"MT",
+    Vermont:"ET",
+    Virginia:"ET",
+    Washington:"PT",
+    "West Virginia":"ET",
+    Wisconsin:"CT",
+    Wyoming:"MT",
+    "District of Columbia":"ET"
+
+};
+
+const zoneArrival = {
+
+    ET:"00:15",
+    CT:"23:15",
+    MT:"22:15",
+    PT:"21:15",
+    AK:"20:15",
+    HT:"19:15"
+
+};
+
+const parentButton =
+    document.getElementById(
+        "parentButton"
+    );
+
+const parentModal =
+    document.getElementById(
+        "parentModal"
+    );
+
+const cancelParent =
+    document.getElementById(
+        "cancelParent"
+    );
+
+const saveParent =
+    document.getElementById(
+        "saveParent"
+    );
+
+const stateSelect =
+    document.getElementById(
+        "stateSelect"
+    );
+
+const arrivalTime =
+    document.getElementById(
+        "arrivalTime"
+    );
+
+const parentEstimate =
+    document.getElementById(
+        "parentEstimate"
+    );
+
+const homeEta =
+    document.getElementById(
+        "homeEta"
+    );
+
+
+states.forEach(state => {
+
+    const option =
+        document.createElement(
+            "option"
+        );
+
+    option.value = state;
+
+    option.textContent = state;
+
+    stateSelect.appendChild(
+        option
+    );
+
+});
+
+
+function formatTime(time) {
+
+    if (!time)
+        return "NOT SET";
+
+    const [
+        hours,
+        minutes
+    ] =
+        time
+            .split(":")
+            .map(Number);
+
+    const suffix =
+        hours >= 12
+            ? "PM"
+            : "AM";
+
+    const hour12 =
+        hours % 12 || 12;
+
+    return `${hour12}:${String(
+        minutes
+    ).padStart(2,"0")} ${suffix}`;
+
+}
+
+
+function updateParentEstimate() {
+
+    const state =
+        stateSelect.value;
+
+    if (!state) {
+
+        parentEstimate.textContent =
+            "SELECT A STATE TO GET A PROJECT ESTIMATE.";
+
+        return;
+
+    }
+
+    const zone =
+        stateTimeZones[state];
+
+    const estimate =
+        zoneArrival[zone];
+
+    arrivalTime.value =
+        estimate;
+
+    parentEstimate.textContent =
+        `PROJECT ESTIMATE: SANTA ARRIVES AROUND ${formatTime(
+            estimate
+        )} IN ${state.toUpperCase()}.`;
+
+}
+
+
+stateSelect.addEventListener(
+    "change",
+    updateParentEstimate
+);
+
+
+arrivalTime.addEventListener(
+    "input",
+    () => {
+
+        if (
+            !stateSelect.value ||
+            !arrivalTime.value
+        ) return;
+
+        parentEstimate.textContent =
+            `PARENT-SET ARRIVAL: ${formatTime(
+                arrivalTime.value
+            )} IN ${stateSelect.value.toUpperCase()}.`;
+
+    }
+);
+
+
+parentButton.addEventListener(
+    "click",
+    () => {
+
+        parentModal.classList.add(
+            "open"
+        );
+
+    }
+);
+
+
+cancelParent.addEventListener(
+    "click",
+    () => {
+
+        parentModal.classList.remove(
+            "open"
+        );
+
+    }
+);
+
+
+parentModal.addEventListener(
+    "click",
+    event => {
+
+        if (
+            event.target ===
+            parentModal
+        ) {
+
+            parentModal.classList.remove(
+                "open"
+            );
+
+        }
+
+    }
+);
+
+
+saveParent.addEventListener(
+    "click",
+    () => {
+
+        if (
+            !stateSelect.value ||
+            !arrivalTime.value
+        ) {
+
+            parentEstimate.textContent =
+                "SELECT A STATE AND ARRIVAL TIME FIRST.";
+
+            return;
+
+        }
+
+        homeEta.textContent =
+            formatTime(
+                arrivalTime.value
+            );
+
+        localStorage.setItem(
+            "santaParentSettings",
+
+            JSON.stringify({
+
+                state:
+                    stateSelect.value,
+
+                arrivalTime:
+                    arrivalTime.value
+
+            })
+        );
+
+        parentModal.classList.remove(
+            "open"
+        );
+
+    }
+);
+
+
+/* LOAD SAVED PARENT SETTINGS */
+
+const saved =
+    JSON.parse(
+        localStorage.getItem(
+            "santaParentSettings"
+        ) || "null"
+    );
+
+
+if (
+    saved &&
+    saved.state &&
+    saved.arrivalTime
+) {
+
+    stateSelect.value =
+        saved.state;
+
+    arrivalTime.value =
+        saved.arrivalTime;
+
+    homeEta.textContent =
+        formatTime(
+            saved.arrivalTime
+        );
+
+}
+
+/* =====================================================
+   CHRISTMAS JAZZ MUSIC
+   ===================================================== */
+
+const christmasMusic =
+    document.getElementById(
+        "christmasMusic"
+    );
+
+const musicButton =
+    document.getElementById(
+        "musicButton"
+    );
+
+christmasMusic.volume = .35;
+
+let musicPlaying = false;
+
+
+musicButton.addEventListener(
+    "click",
+    async () => {
+
+        if (!musicPlaying) {
+
+            try {
+
+                await christmasMusic.play();
+
+                musicPlaying = true;
+
+                musicButton.textContent =
+                    "🔊 MUSIC ON";
+
+            }
+
+            catch (error) {
+
+                console.log(
+                    "Music could not start:",
+                    error
+                );
+
+            }
+
+        }
+
+        else {
+
+            christmasMusic.pause();
+
+            musicPlaying = false;
+
+            musicButton.textContent =
+                "🔇 MUSIC OFF";
+
+        }
+
+    }
+);
+
+</script>
+
+</body>
+</html>
+```
